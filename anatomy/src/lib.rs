@@ -2,3 +2,4 @@
 
 mod bit_array;
 mod mantissa;
+mod dissector;
