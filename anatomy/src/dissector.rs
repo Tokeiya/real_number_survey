@@ -1,13 +1,15 @@
 use super::mantissa::Mantissa;
+use std::fmt::Debug;
 
-pub trait Dissector<const N: usize> {
-	type Value: Copy;
+pub trait Dissector<const N: usize, T: Copy> {
+	type Value: Copy + Debug;
 
-	type Exponent: Copy;
+	type Exponent: Copy + Debug;
 
-	type Mantissa: Mantissa<N>
+	type Mantissa: Mantissa<N, T> + Debug
 	where
-		[(); N]:;
+		[(); N]: Sized,
+		[(); N - 1]: Sized;
 
 	fn value(&self) -> Self::Value;
 	fn is_nan(&self) -> bool;
@@ -18,29 +20,19 @@ pub trait Dissector<const N: usize> {
 	fn is_normal(&self) -> bool;
 	fn is_sign_negative(&self) -> bool;
 	fn is_sign_positive(&self) -> bool;
-	fn exponent(&self) -> Self::Exponent;
-	fn mantissa(&self) -> Self::Mantissa;
+	fn exponent(&self) -> Self::Exponent
+	where
+		[(); N - 1]:;
+	fn mantissa(&self) -> Self::Mantissa
+	where
+		[(); N - 1]:;
 
-	fn describe_exponent(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result;
-
-	fn describe_mantissa(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result;
-
-	fn describe_target(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result;
-
-
+	// This part is fluid and not tested
 	// value:<round trip>
-	// sign:<+/->
+	// sign:<+/->　zero:bool nan:⛔|✅ inf:bool finite:bool norm:bool sub_norm:bool
 	// mantissa:<binary format and hex>
 	// exponent:<integer with sign>
-	// is_nan:bool
-	// is_inf:bool
-	// is_nomal:bool
-
 	fn describe(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-		write!(f,"value:")?;
-		Self::describe_target(self, f)?;
-		writeln!(f,"")?;
-		
 		todo!()
 	}
 }
