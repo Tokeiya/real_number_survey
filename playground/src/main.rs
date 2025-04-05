@@ -6,5 +6,5 @@ use std::env::Args;
 use std::ptr::dangling;
 
 fn main() {
-	println!("{:x}", 1u32 << 24)
+	println!("{}",200u8 as i8)
 }

@@ -32,11 +32,17 @@ const SIGN_MASK: u32 = 0x80_00_00_00;
 const SIGN_SHIFT: u32 = 31;
 
 pub fn extract_sign(value: f32) -> bool {
-	todo!("not implemented");
+	let tmp = value.to_bits();
+	(tmp & SIGN_MASK) != 0
 }
 
 pub fn extract_exponent(value: f32) -> i8 {
-	todo!("not implemented");
+	let tmp = value.to_bits();
+	let tmp = ((tmp & EXPONENT_MASK) >> EXPONENT_SHIFT) as i8;
+	dbg!(tmp);
+	if tmp == 0 { 
+		if extract_mantissa(value) == 0 { 0 } else { -127 }
+	} else { tmp.wrapping_sub(127)  }
 }
 
 pub fn extract_mantissa(value: f32) -> u32 {
@@ -53,18 +59,20 @@ mod tests {
 
 	#[test]
 	fn test_extract_sign() {
-		assert_eq!(extract_sign(1.0), true);
-		assert_eq!(extract_sign(-1.0), false);
+		assert_eq!(extract_sign(1.0), false);
+		assert_eq!(extract_sign(-1.0), true);
 	}
 
 	#[test]
 	fn test_extract_exponent() {
 		assert_eq!(extract_exponent(1.0), 0);
-		assert_eq!(extract_exponent(10.0), 1);
-		assert_eq!(extract_exponent(100.0), 2);
-		assert_eq!(extract_exponent(1000.0), 3);
+		assert_eq!(extract_exponent(2.0), 1);
+		assert_eq!(extract_exponent(4.0), 2);
+		assert_eq!(extract_exponent(8.0), 3);
 		assert_eq!(extract_exponent(0.5), -1);
-		assert_eq!(extract_exponent(0.0), -127);
+		assert_eq!(extract_exponent(0.25), -2);
+		assert_eq!(extract_exponent(0.125), -3);
+		assert_eq!(extract_exponent(0.0), 0);
 	}
 
 	#[test]
