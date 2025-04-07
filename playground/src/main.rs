@@ -6,5 +6,5 @@ use std::env::Args;
 use std::ptr::dangling;
 
 fn main() {
-	dbg!(f32_anatomy::extract_mantissa(f32::MIN_POSITIVE / 2.0));
+	assert_eq!(crate::f32_anatomy::extract_mantissa(1.0), 0x00_80_00_00);
 }

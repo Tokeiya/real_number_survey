@@ -40,16 +40,34 @@ pub fn extract_exponent(value: f32) -> u8 {
 	((value.to_bits() & EXPONENT_MASK) >> EXPONENT_SHIFT) as u8
 }
 
-pub fn get_exponent(value: f32) -> Option<i8> {
-	let exp = extract_exponent(value);
-	todo!()
-}
-
 pub fn extract_mantissa(value: f32) -> u32 {
 	value.to_bits() & MANTISSA_MASK
 }
+
+pub fn get_exponent(value: f32) -> Option<i8> {
+	let tmp = extract_exponent(value);
+
+	if value.is_nan() || value.is_infinite() {
+		None
+	} else if tmp == 0 {
+		if value == 0.0 {
+			Some(0i8)
+		} else {
+			Some(-126i8)
+		}
+	} else {
+		Some((tmp as i16 - 127) as i8)
+	}
+}
+
 pub fn get_mantissa(value: f32) -> u32 {
-	todo!("not implemented");
+	let mantissa = extract_mantissa(value);
+	let exponent = extract_exponent(value);
+	if exponent == 0 {
+		mantissa
+	} else {
+		mantissa | ECONOMIZE
+	}
 }
 
 pub fn get_mantissa_array(value: f32) -> [bool; 24] {
@@ -76,6 +94,9 @@ mod tests {
 		assert_eq!(target::extract_mantissa(1.0), ECONOMIZE);
 		assert_eq!(target::extract_mantissa(0.5), ECONOMIZE);
 		assert_eq!(target::extract_mantissa(0.75), 0x0040_0000);
+
+		assert_eq!(target::extract_mantissa(0.0), 0);
+		assert_eq!(target::extract_mantissa(f32::INFINITY), 0);
 	}
 
 	#[test]
@@ -94,6 +115,7 @@ mod tests {
 		assert_eq!(target::get_exponent(0.25).unwrap(), -2);
 		assert_eq!(target::get_exponent(0.125).unwrap(), -3);
 		assert_eq!(target::get_exponent(0.0).unwrap(), 0);
+		assert_eq!(target::get_exponent(-0.0).unwrap(), 0);
 
 		assert!(target::get_exponent(f32::INFINITY).is_none());
 		assert!(target::get_exponent(f32::NEG_INFINITY).is_none());
